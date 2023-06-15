@@ -12,7 +12,6 @@ import sqlite3
 
 DATABASE = '/tmp/flsite.db'
 DEBUG = True
-#SECRET_KEY = '123456789qwerty'
 app.config.from_object(__name__) # загрузка конфигурации непосредствено из приложения(__name__ ссылается на текущий файл)
 app.config.update(dict(DATABASE=os.path.join(app.root_path, 'flsite.db')))
 
@@ -42,8 +41,7 @@ def close_db(error):
 def index():
     db = get_db()
     dbase = FDataBase(db)
-    menu = dbase.getMenu()
-    return render_template('index.html', menu=menu)
+    return render_template('index.html', menu=dbase.getMenu(), post=dbase.getPostsAnonce())
 
 @app.route('/add_post', methods=['POST', 'GET'])
 def addPost():
@@ -69,6 +67,7 @@ def showPost(id_post):
     if not title:
         abort(404)
     return render_template('post.html', menu=dbase.getMenu(), title=title, post=post)
+
 
 
 """menu = [{'name':'Установка', 'url': 'install-flask'},
@@ -112,11 +111,13 @@ def profile(username):
     return f'Профиль пользователя:{username}'"""
 
 
-"""@app.errorhandler(404)
+@app.errorhandler(404)
 def pageNotFound(error):
-    return render_template('page404.html', title='Страница не найдена', menu=menu)
+    db = get_db()
+    dbase = FDataBase(db)
+    return render_template('page404.html', title='Страница не найдена', menu=dbase.getMenu())
 
-"""
+
 
 if __name__ == '__main__':
     app.run(debug=True)
