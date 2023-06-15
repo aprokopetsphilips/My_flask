@@ -4,11 +4,7 @@ app = Flask(__name__)
 
 app.config['SECRET_KEY'] = '1234567890qwerty'
 
-"""menu = [{'name':'Установка', 'url': 'install-flask'},
-        {'name':'Первое приложение', 'url': 'first-app'},
-        {'name':'Обратная связь', 'url': 'contact'}
-        ]
-"""
+
 
 
 import os
@@ -55,7 +51,7 @@ def addPost():
     dbase = FDataBase(db)
 
     if request.method == 'POST':
-        if len(request.form['name']) >4 and len(request.form['post'])>10:
+        if len(request.form['name']) > 4 and len(request.form['post']) > 10:
             res = dbase.addPost(request.form['name'],request.form['post'])
             if not res:
                 flash('Ошибка добавления статьи', category='error')
@@ -65,8 +61,21 @@ def addPost():
             flash('Ошибка добавления статьи', category='error')
     return render_template('add_post.html',menu = dbase.getMenu(), title='Добавление статьи' )
 
+@app.route('/post/<int:id_post>')
+def showPost(id_post):
+    db = get_db()
+    dbase = FDataBase(db)
+    title, post = dbase.getPost(id_post)
+    if not title:
+        abort(404)
+    return render_template('post.html', menu=dbase.getMenu(), title=title, post=post)
 
 
+"""menu = [{'name':'Установка', 'url': 'install-flask'},
+        {'name':'Первое приложение', 'url': 'first-app'},
+        {'name':'Обратная связь', 'url': 'contact'}
+        ]
+"""
 
 """@app.route('/')
 def index():
