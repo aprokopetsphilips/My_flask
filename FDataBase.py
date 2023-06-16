@@ -9,7 +9,7 @@ class FDataBase:
         self.__cur = db.cursor()
 
     def getMenu(self):
-        sql = '''SELECT * FROM mainmenu'''
+        sql = 'SELECT * FROM mainmenu'
         try:
             self.__cur.execute(sql)
             res = self.__cur.fetchall()

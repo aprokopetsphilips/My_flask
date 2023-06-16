@@ -1,4 +1,4 @@
-from flask import Flask, render_template,url_for,request,flash,session,redirect,abort, g
+from flask import Flask,flash, render_template,url_for,request,flash,session,redirect,abort, g
 from FDataBase import FDataBase
 app = Flask(__name__)
 
@@ -41,7 +41,7 @@ def close_db(error):
 def index():
     db = get_db()
     dbase = FDataBase(db)
-    return render_template('index.html', menu=dbase.getMenu(), post=dbase.getPostsAnonce())
+    return render_template('index.html', menu=dbase.getMenu(), posts=dbase.getPostsAnonce())
 
 @app.route('/add_post', methods=['POST', 'GET'])
 def addPost():
