@@ -3,6 +3,7 @@ from FDataBase import FDataBase
 app = Flask(__name__)
 import os
 import sqlite3
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app.config['SECRET_KEY'] = '1234567890qwerty'
 DATABASE = '/tmp/flsite.db'
@@ -65,8 +66,6 @@ def showPost(alias):
 
 @app.errorhandler(404)
 def pageNotFound(error):
-    db = get_db()
-    dbase = FDataBase(db)
     return render_template('page404.html', title='Страница не найдена', menu=dbase.getMenu())
 
 
@@ -75,44 +74,27 @@ def login():
     return render_template('login.html', menu=dbase.getMenu(), title='Авторизация')
 
 
-@app.route("/login")
+@app.route("/register")
 def register():
-    return render_template("login.html",menu=dbase.getMenu(), title='Регистрация')
+    if request.method == 'POST':
+        if len(request.form['name']) > 4 and len(request.form['email']) > 4 \
+            and len(request.form['psw']) > 4 and request.form['psw'] == request.form['psw2']:
+            hash = generate_password_hash(request.form['psw'])
+            res = dbase.addUser(request.form['name'], request.form['email'], hash)
+            if res:
+                flash('успешно зарегистрированы', 'success')
+                return redirect(url_for('login'))
+            else:
+                flash('Ошибка при добавлении в БД', 'error')
+        else:
+            flash('Неверно заполнены поля', 'error')
+
+    return render_template("register.html",menu=dbase.getMenu(), title='Регистрация')
 
 
 if __name__ == '__main__':
     app.run(debug=True)
 
-
-"""@app.route('/about')
-def about():
-    return render_template('about.html', menu=menu, title='О сайте')
-@app.route('/contact', methods=['POST','GET'])
-def contact():
-    if request.method == 'POST':
-        if len(request.form['username']) > 2:
-            flash('Сообщение отправлено', category='success')
-        else:
-            flash('Не смог', category='error')
-
-    return render_template('contact.html', title = 'Обратная связь', menu=menu)
-
-@app.route('/login', methods=['POST','GET'])
-def login():
-    if 'userLogged' in session:
-        return redirect(url_for('profile', username=session['userLogged']))
-    elif request.method == 'POST' and request.form['username'] == 'andrey' and request.form['psw'] == 'andrey':
-        session['userLogged'] = request.form['username']
-        return  redirect(url_for('profile', username=session['userLogged']))
-
-    return render_template('login.html', title='Авторизация', menu=menu)
-
-
-@app.route('/profile/<username>')
-def profile(username):
-    if 'userLogged' not in session or session['userLogged'] != username:
-        abort(401)
-    return f'Профиль пользователя:{username}'"""
 
 
 
