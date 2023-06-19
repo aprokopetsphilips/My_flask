@@ -1,6 +1,8 @@
 import math
+import re
 import sqlite3
 
+from flask import url_for
 
 
 class FDataBase:
@@ -19,10 +21,20 @@ class FDataBase:
 
         return []
 
-    def addPost(self, title, text):
+    def addPost(self, title, text, url):
         try:
+            self.__cur.execute(f"SELECT COUNT() as 'count' FROM posts WHERE url LIKE '{url}'")
+            res = self.__cur.fetchone()
+            if res['count'] > 0:
+                print('Статья с таким URL уже существует')
+                return False
 
-            self.__cur.execute('INSERT INTO posts VALUES(NULL, ?, ?)', (title, text))
+            base = url_for('static', filename='images')
+
+            text = re.sub(r"(?P<tag><img\s+[^>]*src=)(?P<quote>[\"'])(?P<url>.+?)(?P=quote)>",
+                          "\\g<tag>" + base + "/\\g<url>>", text)
+
+            self.__cur.execute('INSERT INTO posts VALUES(NULL, ?, ?, ?)', (title, text, url))
             self.__db.commit()
 
         except sqlite3.Error as e:
@@ -31,9 +43,9 @@ class FDataBase:
 
         return True
 
-    def getPost(self, post_id):
+    def getPost(self, alias):
         try:
-            self.__cur.execute(f'SELECT title, text FROM posts WHERE id = {post_id} LIMIT 1')
+            self.__cur.execute(f"SELECT title, text FROM posts WHERE url LIKE  '{alias}' LIMIT 1")
             res = self.__cur.fetchone()
             if res:
                 return res
@@ -44,7 +56,7 @@ class FDataBase:
 
     def getPostsAnonce(self):
         try:
-            self.__cur.execute(f'SELECT id, title, text FROM posts ORDER BY id DESC')
+            self.__cur.execute(f'SELECT id, title, text, url FROM posts ORDER BY id DESC')
             res = self.__cur.fetchall()
             if res:
                 return res
