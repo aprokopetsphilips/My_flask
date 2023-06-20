@@ -1,15 +1,28 @@
 from flask import Flask,flash, render_template,url_for,request,flash,session,redirect,abort, g
 from FDataBase import FDataBase
-app = Flask(__name__)
+from flask_login import LoginManager,login_user,login_required,logout_user,current_user
 import os
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
+from UserLogin import UserLogin
 
+
+
+app = Flask(__name__)
 app.config['SECRET_KEY'] = '1234567890qwerty'
 DATABASE = '/tmp/flsite.db'
 DEBUG = True
 app.config.from_object(__name__) # загрузка конфигурации непосредствено из приложения(__name__ ссылается на текущий файл)
 app.config.update(dict(DATABASE=os.path.join(app.root_path, 'flsite.db')))
+
+login_manager = LoginManager(app)
+login_manager.login_view = 'login' # перенаправляет если для просмотра требуется авторизация
+login_manager.login_message = 'Авторизуйтесь для доступа к закрытымстраницам'
+login_manager.login_message_category = 'success'
+@login_manager.user_loader
+def load_user(user_id):
+    print('load user')
+    return UserLogin().fromDB(user_id, dbase)
 
 def connect_db():
     conn = sqlite3.connect(app.config['DATABASE'])
@@ -58,6 +71,7 @@ def addPost():
     return render_template('add_post.html',menu = dbase.getMenu(), title='Добавление статьи' )
 
 @app.route('/post/<alias>')
+@login_required
 def showPost(alias):
     title, post = dbase.getPost(alias)
     if not title:
@@ -69,12 +83,27 @@ def pageNotFound(error):
     return render_template('page404.html', title='Страница не найдена', menu=dbase.getMenu())
 
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('profile'))
+
+    if request.method == 'POST':
+        user = dbase.getUserByEmail(request.form['email'])
+        if user and check_password_hash(user['psw'],request.form['psw']):
+            userlogin = UserLogin().create(user)
+            rm = True if request.form.get('remainme') else False #???
+            print(rm)
+            login_user(userlogin, remember=rm)
+            return redirect(request.args.get('next') or url_for('profile'))
+
+
+        flash('Неверная пара логин/пароль', 'error')
+
     return render_template('login.html', menu=dbase.getMenu(), title='Авторизация')
 
 
-@app.route("/register")
+@app.route("/register", methods=['POST', 'GET'])
 def register():
     if request.method == 'POST':
         if len(request.form['name']) > 4 and len(request.form['email']) > 4 \
@@ -90,6 +119,22 @@ def register():
             flash('Неверно заполнены поля', 'error')
 
     return render_template("register.html",menu=dbase.getMenu(), title='Регистрация')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user() # модуль из flask login
+    flash('Вы вышли из аккаунта', 'success')
+    return redirect(url_for('login'))
+
+
+@app.route('/profile')
+@login_required
+def profile():
+    return f"""<p><a href="{url_for('logout')}">Выйти из профиля</a><p>user info: {current_user.get_id()}"""
+
+
+
 
 
 if __name__ == '__main__':
