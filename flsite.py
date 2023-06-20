@@ -5,6 +5,7 @@ import os
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from UserLogin import UserLogin
+from forms import LoginForm
 
 
 
@@ -87,20 +88,36 @@ def pageNotFound(error):
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('profile'))
-
-    if request.method == 'POST':
-        user = dbase.getUserByEmail(request.form['email'])
-        if user and check_password_hash(user['psw'],request.form['psw']):
+    form = LoginForm()
+    if form.validate_on_submit(): # проверяет тип запроса и делает валидацию по параметрам из forms
+        user = dbase.getUserByEmail(form.email.data) # данные по полю из объекта в forms
+        if user and check_password_hash(user['psw'],form.psw.data):
             userlogin = UserLogin().create(user)
-            rm = True if request.form.get('remainme') else False #???
+            rm = form.remember.data
             print(rm)
             login_user(userlogin, remember=rm)
             return redirect(request.args.get('next') or url_for('profile'))
 
-
         flash('Неверная пара логин/пароль', 'error')
 
-    return render_template('login.html', menu=dbase.getMenu(), title='Авторизация')
+    return render_template('login.html', menu=dbase.getMenu(), title='Авторизация', form=form)
+
+
+
+
+   # """ if request.method == 'POST':
+   #      user = dbase.getUserByEmail(request.form['email'])
+   #      if user and check_password_hash(user['psw'],request.form['psw']):
+   #          userlogin = UserLogin().create(user)
+   #          rm = True if request.form.get('remainme') else False #???
+   #          print(rm)
+   #          login_user(userlogin, remember=rm)
+   #          return redirect(request.args.get('next') or url_for('profile'))
+   #
+   #
+   #      flash('Неверная пара логин/пароль', 'error')
+   #
+   #  return render_template('login.html', menu=dbase.getMenu(), title='Авторизация')"""
 
 
 @app.route("/register", methods=['POST', 'GET'])
