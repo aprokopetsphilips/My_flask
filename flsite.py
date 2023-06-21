@@ -5,7 +5,8 @@ import os
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from UserLogin import UserLogin
-from forms import LoginForm
+from forms import LoginForm, RegisterForm
+from admin import admin
 
 
 
@@ -15,10 +16,11 @@ DATABASE = '/tmp/flsite.db'
 DEBUG = True
 app.config.from_object(__name__) # загрузка конфигурации непосредствено из приложения(__name__ ссылается на текущий файл)
 app.config.update(dict(DATABASE=os.path.join(app.root_path, 'flsite.db')))
+app.register_blueprint(admin, url_prefix='/admin') # url_prefix необяз. параметр позволяет добавлять к домену его автоматом,а затем уже будет идти URL blueprint
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login' # перенаправляет если для просмотра требуется авторизация
-login_manager.login_message = 'Авторизуйтесь для доступа к закрытымстраницам'
+login_manager.login_message = 'Авторизуйтесь для доступа к закрытым страницам'
 login_manager.login_message_category = 'success'
 @login_manager.user_loader
 def load_user(user_id):
@@ -122,11 +124,12 @@ def login():
 
 @app.route("/register", methods=['POST', 'GET'])
 def register():
-    if request.method == 'POST':
-        if len(request.form['name']) > 4 and len(request.form['email']) > 4 \
-            and len(request.form['psw']) > 4 and request.form['psw'] == request.form['psw2']:
+    form = RegisterForm()
+    if form.validate_on_submit():
+
+        if request.method == 'POST':
             hash = generate_password_hash(request.form['psw'])
-            res = dbase.addUser(request.form['name'], request.form['email'], hash)
+            res = dbase.addUser(form.name.data, form.email.data, hash)
             if res:
                 flash('успешно зарегистрированы', 'success')
                 return redirect(url_for('login'))
@@ -135,7 +138,7 @@ def register():
         else:
             flash('Неверно заполнены поля', 'error')
 
-    return render_template("register.html",menu=dbase.getMenu(), title='Регистрация')
+    return render_template("register.html",menu=dbase.getMenu(), title='Регистрация',form=form)
 
 @app.route('/logout')
 @login_required
