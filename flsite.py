@@ -6,7 +6,7 @@ import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from UserLogin import UserLogin
 from forms import LoginForm, RegisterForm
-from admin import admin
+from admin.admin import admin # мпорт именно переменной для Blueprint
 
 
 
