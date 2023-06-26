@@ -7,15 +7,16 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from UserLogin import UserLogin
 from forms import LoginForm, RegisterForm
 from admin.admin import admin # мпорт именно переменной для Blueprint
-
-
-
-app = Flask(__name__)
-app.config['SECRET_KEY'] = '1234567890qwerty'
+# settings
 DATABASE = '/tmp/flsite.db'
 DEBUG = True
+SECRET_KEY= '1234567890qwerty'
+MAX_CONTENT_LENGHT = 1024*1024
+
+app = Flask(__name__)
 app.config.from_object(__name__) # загрузка конфигурации непосредствено из приложения(__name__ ссылается на текущий файл)
 app.config.update(dict(DATABASE=os.path.join(app.root_path, 'flsite.db')))
+
 app.register_blueprint(admin, url_prefix='/admin') # url_prefix необяз. параметр позволяет добавлять к домену его автоматом,а затем уже будет идти URL blueprint
 
 login_manager = LoginManager(app)
@@ -105,21 +106,6 @@ def login():
     return render_template('login.html', menu=dbase.getMenu(), title='Авторизация', form=form)
 
 
-
-
-   # """ if request.method == 'POST':
-   #      user = dbase.getUserByEmail(request.form['email'])
-   #      if user and check_password_hash(user['psw'],request.form['psw']):
-   #          userlogin = UserLogin().create(user)
-   #          rm = True if request.form.get('remainme') else False #???
-   #          print(rm)
-   #          login_user(userlogin, remember=rm)
-   #          return redirect(request.args.get('next') or url_for('profile'))
-   #
-   #
-   #      flash('Неверная пара логин/пароль', 'error')
-   #
-   #  return render_template('login.html', menu=dbase.getMenu(), title='Авторизация')"""
 
 
 @app.route("/register", methods=['POST', 'GET'])

@@ -16,21 +16,21 @@ def logout_admin():
 def index():
     return "admin"
 
-@admin.route('/login')
-def index():
+@admin.route('/login', methods=["POST", "GET"])
+def login():
     if request.method == "POST":
-        if request.form['user'] == 'Andrey' and request.form['psw'] == '00000':
+        if request.form['user'] == 'andrey' and request.form['psw'] == 'andrey':
             login_admin()
             return redirect(url_for('.index')) # точка указывает что index нужно брать из текущей директории
         else:
             flash('Неверная пара логин/пароль', 'error')
 
-        return render_template('admin/login.html', title='Админ-панель')
+    return render_template('admin/login.html', title='Админ-панель')
 
-    @admin.route('/logout', methods=['POST','GET'])
-    def logout():
-        if not isLogged():
-            return redirect(url_for('.login'))
-        logout_admin()
-
+@admin.route('/logout', methods=['POST','GET'])
+def logout():
+    if not isLogged():
         return redirect(url_for('.login'))
+    logout_admin()
+    return redirect(url_for('.login'))
+
