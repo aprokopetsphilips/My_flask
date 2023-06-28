@@ -31,14 +31,14 @@ html, body {
 	left: 50%;
 	top: 50%;
 	width: 345px;
-	height: 220px;
+	height: 250px;
 	margin: -110px 0 0 -173px;
 	background: rgba(64, 65, 69, 0.2);
 }
 
 div.login {
 	width: 300px;
-	height: 175px;
+	height: 205px;
 	padding: 20px;
 	color: #c39000;
 	background: #fafdd1;
@@ -57,7 +57,7 @@ div.login .title {
 	text-align: center;
 	color: #000;
 	font-size: 24px;
-	margin-bottom: 40px;
+	margin-bottom: 10px;
 }
 .login_input {
 	font-size: 16px;
@@ -67,21 +67,23 @@ div.login .title {
 }
 .login_button {
 	color: #444;
-	margin-top: 10px;
+	margin-top: 0px;
 	font-size: 14px;
 	padding: 2px;
 	min-width: 200px
+	text-align: left;
 }
 
 .form-label {
 	display: inline-block;
 	min-width: 100px;
+
 }
 
 .flash {
 	padding: 10px;
 	color: #444;
-	margin: -30px 0 10px 0;
+	margin: -40px 0 10px 0;
 }
 .flash.success {
 	border: 1px solid #21DB56;
@@ -90,6 +92,7 @@ div.login .title {
 .flash.error {
 	border: 1px solid #FF4343;
 	background: #FF9C9C;
+	margin-top: -10px;
 }
 
 ul.mainmenu {
